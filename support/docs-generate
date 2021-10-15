@@ -1,0 +1,27 @@
+#!/bin/sh -eu
+
+cd "$(dirname "$0")/.."
+
+# DESIGN: the `pkgs.coreutils` argument makes utilities like `whoami` available
+# for evaluated code blocks. This is just an example, you can include any
+# package you like.
+nix run \
+    --ignore-environment \
+    --keep LANG \
+    --keep LOCALE_ARCHIVE \
+    --file . \
+    infra.np.nixpkgs-stable.nix-project-org2gfm \
+    infra.np.nixpkgs-stable.ansifilter \
+    infra.np.nixpkgs-stable.coreutils \
+    infra.np.nixpkgs-stable.gnugrep \
+    infra.np.nixpkgs-stable.gnutar \
+    infra.np.nixpkgs-stable.gzip \
+    infra.np.nixpkgs-stable.tree \
+    --command \
+    org2gfm \
+    --path-bin \
+    --exclude links.org \
+    --exclude nix.mac.org \
+    --nix "$(command -v nix)" \
+    --evaluate \
+    "$@"
