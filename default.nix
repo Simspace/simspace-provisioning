@@ -5,7 +5,7 @@
 }:
 
 let
-  nix = import ./nix { inherit config; };
+  nix = import ./external { inherit config; };
 
   bootstrap = import nix.nixpkgs-stable {
     config = {}; overlays = [];
