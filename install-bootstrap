@@ -1,12 +1,23 @@
 #!/bin/sh -eu
 
 
+PROJECT_URL=https://github.com/Simspace/simspace-provisioning/tarball/main
+
+
 main ()
 {
+    check_preconditions
     if ! is_nix_installed
     then install_nix
     fi
     proceed_with_nix "$@"
+}
+
+check_preconditions()
+{
+# TODO: check GitHub access before running.
+# TODO: check that user is on the VPN
+# TODO: check that Homebrew is installed
 }
 
 is_nix_installed()
@@ -19,6 +30,7 @@ install_nix()
     curl -L https://nixos.org/nix/install | sh
 }
 
+# TODO: change branch name from "main" to "dev"
 proceed_with_nix()
 {
     "$(nix_exe)" run \
@@ -28,11 +40,13 @@ proceed_with_nix()
         --keep TERM \
         --keep TERMINFO \
         --keep USER \
-        --file https:: \
+        --file "$PROJECT_URL" \
         infra.np.nixpkgs-stable.simspace-upgrade \
         --command \
-        simspace-home-manager \
-        --nix "$(command -v nix-build)" \
+        simspace-upgrade \
+        --nix "$(nix_exe)" \
+        --system \
+        --user \
         "$@"
 }
 
@@ -42,12 +56,5 @@ nix_exe()
     || command -v /nix/var/nix/profiles/default/bin/nix
 }
 
-move_to_other_script()
-{
-    curl -L https://github.com/Simspace/simspace-provisioning/archive/refs/heads/main.zip --output simspace-provisioning.zip
-    unzip simspace-provisioning.zip
-    mv simspace-provisioning-main simspace-provisioning
-    rm -rf simspace-provisioning.zip
-}
 
 main "$@"
