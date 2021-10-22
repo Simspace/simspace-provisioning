@@ -15,9 +15,29 @@ main ()
 
 check_preconditions()
 {
-# TODO: check GitHub access before running.
-# TODO: check that user is on the VPN
-# TODO: check that Homebrew is installed
+    # TODO: check GitHub access before running.
+    HAS_VPN=false
+    HAS_BREW=false
+
+    # check that user is on the VPN
+    if curl -sI https://eng.simspace.lan | grep "HTTP/2 200" > /dev/null ; then
+        HAS_VPN=true
+    else
+        echo "Failure: Are you currently connected to the VPN?"
+    fi
+
+    # check that Homebrew is installed
+    if brew --version | grep "command not found" > /dev/null ; then
+        echo "Failure: Do you currently have Homebrew installed?"
+    else
+        HAS_BREW=true
+    fi
+
+    # fail if any backing service is missing
+    if ! ( $HAS_VPN && $HAS_BREW ) ; then
+        echo "All required services must be installed and set up before provisioning can begin."
+        exit 1
+    fi
 }
 
 is_nix_installed()
