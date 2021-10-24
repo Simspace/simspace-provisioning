@@ -1,0 +1,139 @@
+#!/bin/sh -eu
+
+
+PROJECT_URL=https://github.com/Simspace/simspace-provisioning/tarball/main
+
+
+main ()
+{
+    check_preconditions
+    if ! is_nix_installed
+    then install_nix
+    fi
+    provision "$@"
+}
+
+check_preconditions()
+{
+    HAS_PROBLEM=false
+    for cmd in \
+        curl \
+        grep \
+        uname
+    do
+        if ! command -v "$cmd"
+        then
+            HAS_PROBLEM=true
+            echo "ERROR: required command not found: $cmd"
+        fi
+    done
+    if is_mac && ! command -v brew
+    then
+        HAS_PROBLEM=true
+        echo "ERROR: required command not found: brew"
+    fi
+    if ! curl --insecure --silent https://eng.simspace.lan >/dev/null
+    then
+        HAS_PROBLEM=true
+        echo "ERROR: do not appear connected to SimSpace VPN"
+    fi
+    if $HAS_PROBLEM
+    then
+        echo
+        echo "All required services must be set up before provisioning." >&2
+        echo "See errors reported above." >&2
+        exit 1
+    fi
+}
+
+is_nix_installed()
+{
+    nix_exe >/dev/null
+}
+
+is_mac()
+{
+    test "$(uname)" = Darwin
+}
+
+install_nix()
+{
+    if is_mac
+    then install_nix_darwin
+    else install_nix_linux
+    fi
+}
+
+install_nix_darwin()
+{
+    curl -L https://nixos.org/nix/install \
+    | sh -s -- --daemon --darwin-use-unencrypted-nix-store-volume
+}
+
+install_nix_linux()
+{
+    curl -L https://nixos.org/nix/install \
+    | sh -s -- --daemon
+}
+
+provision()
+{
+    if is_mac
+    then proceed_darwin
+    else proceed_linux
+    fi
+}
+
+provision_darwin()
+{
+    "$(nix_exe)" run \
+        --ignore-environment \
+        --keep HOME \
+        --keep TERM \
+        --keep TERMINFO \
+        --keep USER \
+        --file "$PROJECT_URL" \
+        infra.np.nixpkgs-stable.simspace-upgrade \
+        --command \
+        simspace-upgrade \
+        --nix "$(nix_exe)" \
+        --system \
+        --user \
+        "$@"
+}
+
+provision_linux()
+{
+    "$(nix_exe)" run \
+        --ignore-environment \
+        --keep DBUS_SESSION_BUS_ADDRESS \
+        --keep HOME \
+        --keep TERM \
+        --keep TERMINFO \
+        --keep USER \
+        --file "$PROJECT_URL" \
+        infra.np.nixpkgs-stable.simspace-upgrade \
+        --command \
+        simspace-upgrade \
+        --nix "$(nix_exe)" \
+        --nixos-rebuild "$(nixos_exe)" \
+        --system \
+        --user \
+        "$@"
+}
+
+nix_exe()
+{
+    command -v nix \
+    || command -v /run/current-system/sw/bin/nix \
+    || command -v /nix/var/nix/profiles/default/bin/nix
+}
+
+nixos_exe()
+{
+    command -v nixos-rebuild \
+    || command -v /run/current-system/sw/bin/nixos-rebuild
+}
+
+
+main "$@"

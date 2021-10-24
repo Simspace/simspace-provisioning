@@ -25,7 +25,8 @@ set -o pipefail
 
 
 TARGET="$(hostname)"
-NIX_EXE="$(command -v nixos-rebuild || true)"
+NIX_EXE="$(command -v nix || true)"
+SLIM=false
 ARGS=()
 
 
@@ -48,7 +49,8 @@ OPTIONS:
     -h --help         print this help message
     -t --target NAME  target configuration
                       (default autodetected by hostname)
-    -N --nix PATH     filepath of 'nixos-rebuild' executable to use
+    -N --nix PATH     filepath of 'nix' executable to use
+    --slim            exclude packages for testing
 
     '${progName}' pins all dependencies except for Nix itself,
      which it finds on the path if possible.  Otherwise set
@@ -68,18 +70,21 @@ main()
             exit 0
             ;;
         -t|--target)
-            TARGET="''${2:-}"
-            if [ -z "$TARGET" ]
+            if [ -z "''${2:-}" ]
             then die "$1 requires argument"
             fi
+            TARGET="''${2:-}"
             shift
             ;;
         -N|--nix)
-            NIX_EXE="''${2:-}"
-            if [ -z "$NIX_EXE" ]
+            if [ -z "''${2:-}" ]
             then die "$1 requires argument"
             fi
+            NIX_EXE="''${2:-}"
             shift
+            ;;
+        --slim)
+            SLIM=true
             ;;
         --)
             shift
@@ -101,7 +106,10 @@ main()
 manage()
 {
     local config="${sources.simspace-provisioning}/home/target/$TARGET"
-    PATH="$(path_for "$NIX_EXE"):$PATH"
+    if $SLIM
+    then config="$config/slim.nix"
+    fi
+    add_nix_to_path "$NIX_EXE"
     /usr/bin/env -i \
         HOME="$HOME" \
         PATH="$PATH" \
