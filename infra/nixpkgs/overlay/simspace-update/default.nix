@@ -215,7 +215,7 @@ revision_id()
     if   git -C "$CHECKOUT" rev-parse "origin/$REVISION" 2>/dev/null 1>&2
     then git -C "$CHECKOUT" rev-parse "origin/$REVISION" 2>/dev/null
     elif git -C "$CHECKOUT" rev-parse "$REVISION" 2>/dev/null 1>&2
-    then git -C "$CHECKOUT" rev-parse "$REVISION" 2>/dev/null 1>&2
+    then git -C "$CHECKOUT" rev-parse "$REVISION" 2>/dev/null
     fi
 }
 

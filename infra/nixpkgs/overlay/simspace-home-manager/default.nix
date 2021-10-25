@@ -26,7 +26,6 @@ set -o pipefail
 
 TARGET="$(hostname)"
 NIX_EXE="$(command -v nix || true)"
-SLIM=false
 ARGS=()
 
 
@@ -50,7 +49,6 @@ OPTIONS:
     -t --target NAME  target configuration
                       (default autodetected by hostname)
     -N --nix PATH     filepath of 'nix' executable to use
-    --slim            exclude packages for testing
 
     '${progName}' pins all dependencies except for Nix itself,
      which it finds on the path if possible.  Otherwise set
@@ -83,9 +81,6 @@ main()
             NIX_EXE="''${2:-}"
             shift
             ;;
-        --slim)
-            SLIM=true
-            ;;
         --)
             shift
             ARGS+=("$@")
@@ -106,9 +101,6 @@ main()
 manage()
 {
     local config="${sources.simspace-provisioning}/home/target/$TARGET"
-    if $SLIM
-    then config="$config/slim.nix"
-    fi
     add_nix_to_path "$NIX_EXE"
     /usr/bin/env -i \
         HOME="$HOME" \
