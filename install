@@ -80,8 +80,8 @@ install_nix_linux()
 provision()
 {
     if is_mac
-    then proceed_darwin
-    else proceed_linux
+    then provision_darwin
+    else provision_linux
     fi
 }
 
