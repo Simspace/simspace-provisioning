@@ -20,7 +20,6 @@ set -eu
 set -o pipefail
 
 
-TARGET="$(hostname)"
 NIXOS_EXE="$(command -v nixos-rebuild || true)"
 ARGS=()
 
@@ -42,8 +41,6 @@ DESCRIPTION:
 OPTIONS:
 
     -h --help                print this help message
-    -t --target              target host to configure for
-                             (otherwise autodetected)
     -N --nixos-rebuild PATH  filepath of 'nixos-rebuild'
                              executable to use
 
@@ -63,13 +60,6 @@ main()
         -h|--help)
             print_usage
             exit 0
-            ;;
-        -t|--target)
-            if [ -z "''${2:-}" ]
-            then die "$1 requires argument"
-            fi
-            TARGET="''${2:-}"
-            shift
             ;;
         -N|--nixos-rebuild)
             if [ -z "''${2:-}" ]
@@ -97,11 +87,13 @@ main()
 
 rebuild()
 {
+    local config="${sources.simspace-provisioning}/system"
+    local custom="$HOME/.config/simspace/provisioning/system"
     /usr/bin/env -i \
         MANPATH=/run/current-system/sw/share/man \
         PATH="$(path_for "$NIXOS_EXE"):$PATH" \
-        NIX_PATH="nixpkgs=${sources.nixpkgs-system}" \
-        NIXOS_CONFIG="${sources.simspace-provisioning}/machines/$TARGET/configuration.nix" \
+        NIX_PATH="nixpkgs=${sources.nixpkgs-system}:simspace-custom=$custom" \
+        NIXOS_CONFIG="$config" \
         nixos-rebuild "$@"
 }
 

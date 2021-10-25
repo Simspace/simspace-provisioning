@@ -24,7 +24,6 @@ set -eu
 set -o pipefail
 
 
-TARGET="$(hostname)"
 NIX_EXE="$(command -v nix || true)"
 ARGS=()
 
@@ -46,8 +45,6 @@ DESCRIPTION:
 OPTIONS:
 
     -h --help         print this help message
-    -t --target NAME  target configuration
-                      (default autodetected by hostname)
     -N --nix PATH     filepath of 'nix' executable to use
 
     '${progName}' pins all dependencies except for Nix itself,
@@ -66,13 +63,6 @@ main()
         -h|--help)
             print_usage
             exit 0
-            ;;
-        -t|--target)
-            if [ -z "''${2:-}" ]
-            then die "$1 requires argument"
-            fi
-            TARGET="''${2:-}"
-            shift
             ;;
         -N|--nix)
             if [ -z "''${2:-}" ]
@@ -100,7 +90,8 @@ main()
 
 manage()
 {
-    local config="${sources.simspace-provisioning}/home/target/$TARGET"
+    local config="${sources.simspace-provisioning}/user"
+    local custom="$HOME/.config/simspace/provisioning/user"
     add_nix_to_path "$NIX_EXE"
     /usr/bin/env -i \
         HOME="$HOME" \

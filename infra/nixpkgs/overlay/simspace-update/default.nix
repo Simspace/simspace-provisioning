@@ -20,7 +20,6 @@ set -eu
 set -o pipefail
 
 
-TARGET="$(hostname)"
 NIX_EXE="$(command -v nix || true)"
 NIXOS_EXE="$(command -v nixos-rebuild || true)"
 USER=true
@@ -55,9 +54,6 @@ OPTIONS:
     -S --no-system           don't provision system installation
 
     -r --revision ID         ID of branch/tag to use (else latest supported)
-
-    -t --target NAME         target host to configure for
-                             (otherwise autodetected)
 
     -N --nix PATH            filepath of 'nix' executable to use
     -R --nixos-rebuild PATH  filepath of 'nixos-rebuild' executable to use
@@ -96,13 +92,6 @@ main()
             then die "$1 requires argument"
             fi
             REVISION="''${2:-}"
-            shift
-            ;;
-        -t|--target)
-            if [ -z "''${2:-}" ]
-            then die "$1 requires argument"
-            fi
-            TARGET="''${2:-}"
             shift
             ;;
         -N|--nix)
@@ -173,6 +162,7 @@ provision_darwin()
 {
     nix run \
         --ignore-environment \
+        --keep HOME \
         --file "$CHECKOUT" \
         infra.np.nixpkgs-stable.simspace-darwin-rebuild \
         --command \
@@ -185,6 +175,7 @@ provision_linux()
 {
     nix run \
         --ignore-environment \
+        --keep HOME \
         --file "$CHECKOUT" \
         infra.np.nixpkgs-stable.simspace-nixos-rebuild \
         --command \

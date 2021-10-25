@@ -21,7 +21,6 @@ set -eu
 set -o pipefail
 
 
-TARGET="$(hostname)"
 NIX_EXE="$(command -v nix || true)"
 ARGS=()
 
@@ -43,8 +42,6 @@ DESCRIPTION:
 OPTIONS:
 
     -h --help         print this help message
-    -t --target NAME  target host to configure for
-                      (otherwise autodetected)
     -N --nix PATH     filepath of 'nix' executable to use
 
     '${progName}' pins all dependencies except for Nix itself,
@@ -63,13 +60,6 @@ main()
         -h|--help)
             print_usage
             exit 0
-            ;;
-        -t|--target)
-            if [ -z "''${2:-}" ]
-            then die "$1 requires argument"
-            fi
-            TARGET="''${2:-}"
-            shift
             ;;
         -N|--nix)
             if [ -z "''${2:-}" ]
@@ -97,13 +87,15 @@ main()
 
 rebuild()
 {
-    local config="${sources.simspace-provisioning}/machines/$TARGET/darwin-configuration.nix"
+    local config="${sources.simspace-provisioning}/system"
+    local custom="$HOME/.config/simspace/provisioning/system"
 
     add_nix_to_path "$NIX_EXE"
 
     NIX_PATH="darwin=${sources.nix-darwin}"
     NIX_PATH="nixpkgs=${sources.nixpkgs-system}:$NIX_PATH"
     NIX_PATH="darwin-config=$config:$NIX_PATH"
+    NIX_PATH="simspace-custom=$custom:$NIX_PATH"
 
     /usr/bin/env -i \
         "PATH=$PATH" \
