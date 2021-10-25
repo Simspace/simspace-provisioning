@@ -94,9 +94,9 @@ provision_darwin()
         --keep TERMINFO \
         --keep USER \
         --file "$PROJECT_URL" \
-        infra.np.nixpkgs-stable.simspace-upgrade \
+        infra.np.nixpkgs-stable.simspace-update \
         --command \
-        simspace-upgrade \
+        simspace-update \
         --nix "$(nix_exe)" \
         --system \
         --user \
@@ -113,9 +113,9 @@ provision_linux()
         --keep TERMINFO \
         --keep USER \
         --file "$PROJECT_URL" \
-        infra.np.nixpkgs-stable.simspace-upgrade \
+        infra.np.nixpkgs-stable.simspace-update \
         --command \
-        simspace-upgrade \
+        simspace-update \
         --nix "$(nix_exe)" \
         --nixos-rebuild "$(nixos_exe)" \
         --system \
