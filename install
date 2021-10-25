@@ -32,7 +32,8 @@ check_preconditions()
         HAS_PROBLEM=true
         echo "ERROR: required command not found: brew"
     fi
-    if ! curl --insecure --silent https://eng.simspace.lan >/dev/null
+    # TODO added a check on HAS_PROBLEM to not run this if curl isn't found
+    if ! $HAS_PROBLEM && ! curl --insecure --silent https://eng.simspace.lan >/dev/null
     then
         HAS_PROBLEM=true
         echo "ERROR: do not appear connected to SimSpace VPN"
