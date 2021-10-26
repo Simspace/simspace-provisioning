@@ -13,6 +13,8 @@ self.nix-project-lib.writeShellCheckedExe progName
         coreutils
         git
         hostname
+        gnutar
+        gzip
     ];
 }
 ''
