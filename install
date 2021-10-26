@@ -12,6 +12,9 @@ main ()
     if ! is_nix_installed
     then install_nix
     fi
+    if is_mac && !is_nix_darwin_installed
+    then install_nix_darwin
+    fi
     provision "$@"
 }
 
@@ -65,24 +68,44 @@ install_nix()
 {
     echo "No nix instillation found"
     if is_mac
-    then install_nix_darwin
-    else install_nix_linux
+    then install_nix_for_darwin
+    else install_nix_for_linux
     fi
     echo "Nix installation finished"
 }
 
-install_nix_darwin()
+install_nix_for_darwin()
 {
     echo "Mac system detected installing nix for darwin..."
     curl -L https://nixos.org/nix/install \
     | sh -s -- --daemon --darwin-use-unencrypted-nix-store-volume
 }
 
-install_nix_linux()
+install_nix_for_linux()
 {
-    echo "Linux system detected installing nix..."
+    echo "Linux system detected installing nix for linux..."
     curl -L https://nixos.org/nix/install \
     | sh -s -- --daemon
+}
+
+is_nix_darwin_installed()
+{
+    echo "Checking for nix-darwin installation"
+    command -v darwin-rebuild >/dev/null 2>&1
+}
+
+install_nix_darwin()
+{
+   echo "Installing nix-darwin..."
+   # "$(nix_exe)" run \
+   #     --ignore-environment \
+   #     --keep HOME \
+   #     --keep TERM \
+   #     --keep TERMINFO \
+   #     --keep USER \
+   #     --file "https://github.com/LnL7/nix-darwin/archive/master.tar.gz" \
+   #     installer \
+   #     --command darwin-installer
 }
 
 provision()
