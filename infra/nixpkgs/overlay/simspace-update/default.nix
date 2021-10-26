@@ -24,11 +24,13 @@ NIX_EXE="$(command -v nix || true)"
 NIXOS_EXE="$(command -v nixos-rebuild || true)"
 USER=true
 SYSTEM=true
+UPDATE=true
 REVISION=main
 CACHE_DIR=~/.cache/simspace/provisioning
-CONFIG_DIR=~/.config/simspace/provisioning
 CHECKOUT="$CACHE_DIR/repo"
 PROJECT_URL=git@github.com:Simspace/simspace-provisioning.git
+ARGS=()
+
 
 . "${self.nix-project-lib.common}/share/nix-project/common.bash"
 
@@ -36,7 +38,10 @@ PROJECT_URL=git@github.com:Simspace/simspace-provisioning.git
 print_usage()
 {
     cat - <<EOF
-USAGE: ${progName} [OPTION]... [--] NIX_DARWIN_ARGS...
+USAGE:
+    ${progName} [OPTION]...               [--] [switch]
+    ${progName} [OPTION]... --user-only   [--] HOME_MANAGER_ARGS...
+    ${progName} [OPTION]... --system-only [--] DARWIN_OR_NIXOS_REBUILD_ARGS...
 
 DESCRIPTION:
 
@@ -46,17 +51,19 @@ DESCRIPTION:
 
 OPTIONS:
 
-    -h --help                print this help message
+    -h --help           print this help message
 
-    -u --user                provision user home directory (default)
-    -U --no-user             don't provision user home directory
-    -s --system              provision system installation (default)
-    -S --no-system           don't provision system installation
+    -u --user-only      only provision user home directory
+    -s --system-only    only provision system installation
 
-    -r --revision ID         ID of branch/tag to use (else latest supported)
+    -U --no-update      don't update provisioning code
+                        (ignores --revision)
 
-    -N --nix PATH            filepath of 'nix' executable to use
-    -R --nixos-rebuild PATH  filepath of 'nixos-rebuild' executable to use
+    -r --revision ID    ID of branch/tag to use (else latest supported)
+
+    -N --nix PATH       filepath of 'nix' executable to use
+    -R --nixos-rebuild
+                  PATH  filepath of 'nixos-rebuild' executable to use
 
     '${progName}' pins all dependencies except for Nix itself,
      which it finds on the path if possible.  Otherwise set
@@ -64,7 +71,6 @@ OPTIONS:
 
 EOF
 }
-
 
 main()
 {
@@ -75,17 +81,14 @@ main()
             print_usage
             exit 0
             ;;
-        -u|--user)
-            USER=true
-            ;;
-        -U|--no-user)
+        -u|--user-only)
             USER=false
             ;;
-        -s|--system)
-            SYSTEM=true
-            ;;
-        -S|--no-system)
+        -s|--system-only)
             SYSTEM=false
+            ;;
+        -U|--no-update)
+            UPDATE=false
             ;;
         -r|--revision)
             if [ -z "''${2:-}" ]
@@ -108,12 +111,21 @@ main()
             NIXOS_EXE="''${2:-}"
             shift
             ;;
+        --)
+            shift
+            ARGS+=("$@")
+            break
+            ;;
         *)
-            die "unrecognized argument: $1"
+            ARGS+=("$1")
             ;;
         esac
         shift
     done
+
+    if [ "''${#ARGS[@]}" -eq 0 ]
+    then ARGS=(switch)
+    fi
 
     add_nix_to_path "$NIX_EXE"
 
@@ -131,6 +143,21 @@ main()
 
 check_preconditions()
 {
+    if "$USER" && "$SYSTEM"
+    then
+        for a in "''${ARGS[@]}"
+        do
+            if [ "$a" != switch ]
+            then die "disallowed argument: $a"
+            fi
+        done
+        if [ "''${#ARGS[@]}" -ne 1 ]
+        then die "too many commands: ''${ARGS[*]}"
+        fi
+    fi
+    if ! ( "$USER" || "$SYSTEM" )
+    then die "--user-only and --system-only incompatible"
+    fi
     local checkout_dir; checkout_dir="$(dirname "$CHECKOUT")"
     if ! mkdir --parents "$checkout_dir"
     then die_helpless "could not create directory: $checkout_dir"
@@ -142,12 +169,15 @@ set_up_source()
     if ! [ -d "$CHECKOUT" ]
     then git clone -- "$PROJECT_URL" "$CHECKOUT"
     fi
-    git -C "$CHECKOUT" fetch --all --prune
-    local id; id="$(revision_id)"
-    if [ -z "$id" ]
-    then die_helpless "bad revision: $REVISION"
+    if "$UPDATE"
+    then
+        git -C "$CHECKOUT" fetch --all --prune
+        local id; id="$(revision_id)"
+        if [ -z "$id" ]
+        then die_helpless "bad revision: $REVISION"
+        fi
+        git -C "$CHECKOUT" checkout "$id"
     fi
-    git -C "$CHECKOUT" checkout "$id"
 }
 
 provision_system()
@@ -168,7 +198,7 @@ provision_darwin()
         --command \
         simspace-darwin-rebuild \
         --nix "$NIX_EXE" \
-        "$@"
+        "''${ARGS[@]}"
 }
 
 provision_linux()
@@ -181,7 +211,7 @@ provision_linux()
         --command \
         simspace-nixos-rebuild \
         --nix "$NIXOS_EXE" \
-        "$@"
+        "''${ARGS[@]}"
 }
 
 provision_user()
@@ -198,7 +228,7 @@ provision_user()
         --command \
         simspace-home-manager \
         --nix "$NIX_EXE" \
-        "$@"
+        "''${ARGS[@]}"
 }
 
 revision_id()

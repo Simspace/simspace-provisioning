@@ -100,7 +100,7 @@ provision_darwin()
         --nix "$(nix_exe)" \
         --system \
         --user \
-        "$@"
+        switch
 }
 
 provision_linux()
@@ -120,7 +120,7 @@ provision_linux()
         --nixos-rebuild "$(nixos_exe)" \
         --system \
         --user \
-        "$@"
+        switch
 }
 
 nix_exe()
