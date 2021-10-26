@@ -6,4 +6,5 @@ let
   provided = if pkgs.stdenv.isDarwin then ./darwin.nix else ./linux.nix;
 in {
   imports = [provided] ++ custom;
+  config = {};
 }
