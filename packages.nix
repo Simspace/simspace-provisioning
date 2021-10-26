@@ -34,7 +34,6 @@ let
         "gnugrep"
         "gnumake"
         "gnupg"  # TODO: home-manager
-        "gnutar"
         "graphviz"
         "imagemagick"
         "macchina"
