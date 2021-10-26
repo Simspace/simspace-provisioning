@@ -21,7 +21,7 @@ check_preconditions()
         grep \
         uname
     do
-        if ! command -v "$cmd"
+        if ! command -v "$cmd" >/dev/null 2>&1
         then
             HAS_PROBLEM=true
             echo "ERROR: required command not found: $cmd"
