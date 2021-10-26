@@ -127,6 +127,7 @@ main()
     then ARGS=(switch)
     fi
 
+    echo "Adding nix to the Path..."
     add_nix_to_path "$NIX_EXE"
 
     check_preconditions
@@ -143,6 +144,7 @@ main()
 
 check_preconditions()
 {
+    echo "Checking for valid preconditions..."
     if "$USER" && "$SYSTEM"
     then
         for a in "''${ARGS[@]}"
@@ -158,7 +160,9 @@ check_preconditions()
     if ! ( "$USER" || "$SYSTEM" )
     then die "--user-only and --system-only incompatible"
     fi
+    echo "Configuring checkout directory..."
     local checkout_dir; checkout_dir="$(dirname "$CHECKOUT")"
+    echo "Creating checkout directory..."
     if ! mkdir --parents "$checkout_dir"
     then die_helpless "could not create directory: $checkout_dir"
     fi
@@ -166,11 +170,15 @@ check_preconditions()
 
 set_up_source()
 {
+    echo "Checking for existing project clone..."
     if ! [ -d "$CHECKOUT" ]
-    then git clone -- "$PROJECT_URL" "$CHECKOUT"
+    then
+        echo "Cloning project..."
+        git clone -- "$PROJECT_URL" "$CHECKOUT"
     fi
     if "$UPDATE"
     then
+        echo "Updating checkout..."
         git -C "$CHECKOUT" fetch --all --prune
         local id; id="$(revision_id)"
         if [ -z "$id" ]
@@ -182,6 +190,7 @@ set_up_source()
 
 provision_system()
 {
+    echo "Provisioning for system level configuration..."
     if [ "$(uname)" = "Darwin" ]
     then provision_darwin
     else provision_linux
@@ -190,6 +199,7 @@ provision_system()
 
 provision_darwin()
 {
+    echo "Provisioning Mac system..."
     nix run \
         --ignore-environment \
         --keep HOME \
@@ -203,6 +213,7 @@ provision_darwin()
 
 provision_linux()
 {
+    echo "Provisioning Linux system..."
     nix run \
         --ignore-environment \
         --keep HOME \
@@ -216,6 +227,7 @@ provision_linux()
 
 provision_user()
 {
+    echo "Provisioning for user level configuration..."
     nix run \
         --ignore-environment \
         --keep DBUS_SESSION_BUS_ADDRESS \
