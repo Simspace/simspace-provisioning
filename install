@@ -12,7 +12,7 @@ main ()
     if ! is_nix_installed
     then install_nix
     fi
-    if is_mac && !is_nix_darwin_installed
+    if is_mac && ! is_nix_darwin_installed
     then install_nix_darwin
     fi
     provision "$@"
