@@ -1,7 +1,7 @@
 { ... }:
 
 {
-  homebrew = import ./homebrew;
+  #homebrew = import ./homebrew;
 
   nix.binaryCaches = [
     "https://haskell-language-server.cachix.org"
