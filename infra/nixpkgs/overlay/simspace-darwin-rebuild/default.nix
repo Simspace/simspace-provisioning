@@ -87,7 +87,7 @@ main()
 
 rebuild()
 {
-    local config="${sources.simspace-provisioning}/system"
+    local config="${sources.simspace-provisioning}/system/darwin.nix"
     local custom="$HOME/.config/simspace/provisioning/system"
 
     add_nix_to_path "$NIX_EXE"
