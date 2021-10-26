@@ -3,6 +3,8 @@
 {
   #homebrew = import ./homebrew;
 
+  environment.systemPackages = [];
+
   nix.binaryCaches = [
     "https://haskell-language-server.cachix.org"
     "https://hydra.iohk.io"
