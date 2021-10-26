@@ -6,7 +6,9 @@ PROJECT_URL=https://github.com/Simspace/simspace-provisioning/tarball/main
 
 main ()
 {
+    echo "Checking for required backing services"
     check_preconditions
+    echo "All required services found"
     if ! is_nix_installed
     then install_nix
     fi
@@ -49,36 +51,43 @@ check_preconditions()
 
 is_nix_installed()
 {
+    echo "Checking for nix installation"
     nix_exe >/dev/null
 }
 
 is_mac()
 {
+    echo "Checking system type"
     test "$(uname)" = Darwin
 }
 
 install_nix()
 {
+    echo "No nix instillation found"
     if is_mac
     then install_nix_darwin
     else install_nix_linux
     fi
+    echo "Nix installation finished"
 }
 
 install_nix_darwin()
 {
+    echo "Mac system detected installing nix for darwin"
     curl -L https://nixos.org/nix/install \
     | sh -s -- --daemon --darwin-use-unencrypted-nix-store-volume
 }
 
 install_nix_linux()
 {
+    echo "Linux system detected installing nix"
     curl -L https://nixos.org/nix/install \
     | sh -s -- --daemon
 }
 
 provision()
 {
+    echo "Beginning system provisioning"
     if is_mac
     then provision_darwin
     else provision_linux
@@ -87,6 +96,7 @@ provision()
 
 provision_darwin()
 {
+    echo "Provisioning Mac"
     "$(nix_exe)" run \
         --ignore-environment \
         --keep HOME \
@@ -103,6 +113,7 @@ provision_darwin()
 
 provision_linux()
 {
+    echo "Provisioning Linux"
     "$(nix_exe)" run \
         --ignore-environment \
         --keep DBUS_SESSION_BUS_ADDRESS \
