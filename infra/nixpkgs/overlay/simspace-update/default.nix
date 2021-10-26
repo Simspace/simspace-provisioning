@@ -127,7 +127,7 @@ main()
     then ARGS=(switch)
     fi
 
-    echo "Adding nix to the Path..."
+    echo "Adding nix executable to the Path..."
     add_nix_to_path "$NIX_EXE"
 
     check_preconditions

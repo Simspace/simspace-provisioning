@@ -87,9 +87,11 @@ main()
 
 rebuild()
 {
+    echo "Configuring custom config locations..."
     local config="${sources.simspace-provisioning}/system/darwin.nix"
     local custom="$HOME/.config/simspace/provisioning/system"
 
+    echo "Adding nix executable to the Path..."
     add_nix_to_path "$NIX_EXE"
 
     NIX_PATH="darwin=${sources.nix-darwin}"
@@ -97,6 +99,7 @@ rebuild()
     NIX_PATH="darwin-config=$config:$NIX_PATH"
     NIX_PATH="simspace-custom=$custom:$NIX_PATH"
 
+    echo "Building nix-darwin..."
     /usr/bin/env -i \
         "PATH=$PATH" \
         "NIX_PATH=$NIX_PATH" \
@@ -107,6 +110,7 @@ rebuild()
         --no-link \
         system
 
+    echo "Adding nix-darwin executable to the environment"
     local nix_darwin
     nix_darwin="$( /usr/bin/env -i \
         "PATH=$PATH" \
@@ -118,6 +122,7 @@ rebuild()
         system
     )"
 
+    echo "Executing darwin-rebuild..."
     /usr/bin/env -i \
         "NIX_PATH=$NIX_PATH" \
         "$nix_darwin/sw/bin/darwin-rebuild" \
