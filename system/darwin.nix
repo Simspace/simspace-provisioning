@@ -1,4 +1,4 @@
-{}:
+{...}:
 
 {
   #homebrew = import ./homebrew;
