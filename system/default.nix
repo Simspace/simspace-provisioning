@@ -1,9 +1,8 @@
 { lib, ... }:
 
 let
-  custom =
-    lib.optional (builtins.pathExists <simspace-custom>) <simspace-custom>;
-
+  try = builtins.tryEval <simspace-custom>;
+  custom = if try.success then [try.value] else [];
 in {
   imports = [./provided.nix] ++ custom;
 }
