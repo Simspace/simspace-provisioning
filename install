@@ -27,7 +27,7 @@ check_preconditions()
             echo "ERROR: required command not found: $cmd"
         fi
     done
-    if is_mac && ! command -v brew
+    if is_mac && ! command -v brew >/dev/null 2>&1
     then
         HAS_PROBLEM=true
         echo "ERROR: required command not found: brew"
