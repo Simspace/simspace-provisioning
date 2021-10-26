@@ -98,8 +98,6 @@ provision_darwin()
         --command \
         simspace-update \
         --nix "$(nix_exe)" \
-        --system \
-        --user \
         switch
 }
 
@@ -118,8 +116,6 @@ provision_linux()
         simspace-update \
         --nix "$(nix_exe)" \
         --nixos-rebuild "$(nixos_exe)" \
-        --system \
-        --user \
         switch
 }
 
